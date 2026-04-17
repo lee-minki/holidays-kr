@@ -60,7 +60,7 @@ cat >> public/index.html << EOF
                     아래 URL을 캘린더 앱의 구독 기능에 직접 입력하여 사용할 수 있습니다:
                 </p>
                 <code class="bg-gray-100 p-2 rounded block mb-4">
-                    https://daehyeoni.dev/$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)/holidays.ics
+                    https://calendar.daehyeoni.dev/holidays.ics
                 </code>
 
                 <h3 class="text-lg font-medium mb-2">JSON 데이터</h3>
