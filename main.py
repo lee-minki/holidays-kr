@@ -11,7 +11,7 @@ from icalendar import Calendar, Event
 
 class HolidayManager:
     def __init__(self):
-        self.api = "https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
+        self.api = "http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
         self.data_dir = "data"
         os.makedirs(self.data_dir, exist_ok=True)
 

@@ -45,4 +45,5 @@ def test_fetch_holiday_list_collects_each_month_and_filters_non_holidays(monkeyp
     assert [call.kwargs["params"]["solMonth"] for call in get.call_args_list] == [
         f"{month:02d}" for month in range(1, 13)
     ]
+    assert get.call_args_list[0].args[0].startswith("http://apis.data.go.kr/")
     assert holidays == [{"locdate": 20260101, "dateName": "신정", "isHoliday": "Y"}]
