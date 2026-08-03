@@ -1,6 +1,7 @@
 #!/bin/bash
 
-GCAL_URL="https://calendar.google.com/calendar/r?cid=webcal://daehyeoni.dev/holidays-kr/holidays.ics"
+PAGES_URL="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+GCAL_URL="https://calendar.google.com/calendar/r?cid=webcal://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/holidays.ics"
 
 cat > public/index.html << EOF
 <!DOCTYPE html>
@@ -14,7 +15,7 @@ cat > public/index.html << EOF
     <style>.github-fork-ribbon.left-top:before {background-color: #333;}</style>
 </head>
 <body class="bg-gray-100 min-h-screen py-8">
-    <a class="github-fork-ribbon left-top" href="https://github.com/DaeHyeoNi/holidays-kr" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+    <a class="github-fork-ribbon left-top" href="https://github.com/${GITHUB_REPOSITORY}" data-ribbon="GitHub에서 보기" title="GitHub에서 보기">GitHub에서 보기</a>
     <div class="container mx-auto px-4">
         <h1 class="text-3xl font-bold mb-8">대한민국 공휴일 데이터</h1>
         
@@ -60,7 +61,7 @@ cat >> public/index.html << EOF
                     아래 URL을 캘린더 앱의 구독 기능에 직접 입력하여 사용할 수 있습니다:
                 </p>
                 <code class="bg-gray-100 p-2 rounded block mb-4">
-                    https://calendar.daehyeoni.dev/holidays.ics
+                    ${PAGES_URL}/holidays.ics
                 </code>
 
                 <h3 class="text-lg font-medium mb-2">JSON 데이터</h3>
@@ -71,7 +72,7 @@ cat >> public/index.html << EOF
         </div>
 
         <footer class="mt-8 text-center text-gray-600">
-            <p>데이터 출처: <a href="https://www.data.go.kr/data/15012690/openapi.do">공공데이터포털 (공휴일 정보)</a></p>
+            <p>데이터 출처: <a href="https://www.data.go.kr/dataset/15012679/openapi.do">한국천문연구원 특일 정보 제공 서비스</a></p>
             <p class="mt-2">
                 <a href="https://github.com/${GITHUB_REPOSITORY}" class="text-blue-500 hover:text-blue-700">GitHub Repository</a>
             </p>

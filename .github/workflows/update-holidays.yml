@@ -2,7 +2,7 @@ name: Update Holiday Data
 
 on:
   schedule:
-    - cron: '0 0,2,4,6,8 * * 1-5'  # UTC time (KST-9)
+    - cron: '15 3 * * *'
   workflow_dispatch:
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
       
     - name: Cache Docker layers
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -36,7 +36,7 @@ jobs:
           --load \
           -t holiday-updater .
         docker run --rm \
-          -e HOLIDAY_API_KEY=${HOLIDAY_API_KEY} \
+          --env HOLIDAY_API_KEY \
           -v ${GITHUB_WORKSPACE}:/app \
           holiday-updater
 

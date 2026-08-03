@@ -1,7 +1,7 @@
 BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//daehyeoni//holidays-kr//KO
-X-WR-CALDESC:https://github.com/daehyeoni/holidays-kr
+PRODID:-//lee-minki//holidays-kr//KO
+X-WR-CALDESC:https://github.com/lee-minki/holidays-kr
 X-WR-CALNAME:대한민국의 공휴일
 X-WR-TIMEZONE:Asia/Seoul
 BEGIN:VEVENT

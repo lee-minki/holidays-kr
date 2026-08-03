@@ -1,6 +1,5 @@
 import datetime
 import glob
-import hashlib
 import json
 import os
 import uuid
@@ -12,21 +11,32 @@ from icalendar import Calendar, Event
 
 class HolidayManager:
     def __init__(self):
-        self.api = "http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
+        self.api = "https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
         self.data_dir = "data"
         os.makedirs(self.data_dir, exist_ok=True)
 
     def fetch_holiday_list(self, year):
-        params = {
-            "solYear": year,
-            "ServiceKey": os.getenv("HOLIDAY_API_KEY"),
-            "_type": "json",
-            "numOfRows": "100",
-        }
-        response = requests.get(self.api, params=params)
-        response.raise_for_status()
+        holidays = []
+        for month in range(1, 13):
+            params = {
+                "solYear": str(year),
+                "solMonth": f"{month:02d}",
+                "ServiceKey": os.getenv("HOLIDAY_API_KEY"),
+                "_type": "json",
+                "numOfRows": "100",
+            }
+            response = requests.get(self.api, params=params, timeout=30)
+            response.raise_for_status()
+            items = response.json()["response"]["body"].get("items", {})
+            month_items = items.get("item", []) if items else []
 
-        return response.json()["response"]["body"]["items"]["item"]
+            if isinstance(month_items, dict):
+                month_items = [month_items]
+            holidays.extend(
+                item for item in month_items if item.get("isHoliday") == "Y"
+            )
+
+        return holidays
 
     def format_holidays(self, holidays):
         formatted = {}
@@ -37,7 +47,8 @@ class HolidayManager:
 
             if formatted_date not in formatted:
                 formatted[formatted_date] = []
-            formatted[formatted_date].append(holiday["dateName"])
+            if holiday["dateName"] not in formatted[formatted_date]:
+                formatted[formatted_date].append(holiday["dateName"])
 
         return formatted
 
@@ -62,10 +73,10 @@ class HolidayManager:
         # Create calendar
         cal = Calendar()
         cal.add("version", "2.0")
-        cal.add("prodid", "-//daehyeoni//holidays-kr//KO")
+        cal.add("prodid", "-//lee-minki//holidays-kr//KO")
         cal.add("x-wr-calname", "대한민국의 공휴일")
         cal.add("x-wr-timezone", "Asia/Seoul")
-        cal.add("x-wr-caldesc", "https://github.com/daehyeoni/holidays-kr")
+        cal.add("x-wr-caldesc", "https://github.com/lee-minki/holidays-kr")
 
         # Load all JSON files
         all_holidays = {}
@@ -96,10 +107,6 @@ class HolidayManager:
         with open("holidays.ics", "wb") as f:
             f.write(cal.to_ical())
 
-    def calculate_hash(self, filename):
-        with open(filename, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
-
     def process_holidays(self):
         years = [datetime.now().year, datetime.now().year + 1]
         changes_detected = False
@@ -125,10 +132,8 @@ class HolidayManager:
 
         self.cleanup_old_files()
 
-        if changes_detected:
-            self.generate_ics()
-            return True
-        return False
+        self.generate_ics()
+        return changes_detected
 
 
 def main():
