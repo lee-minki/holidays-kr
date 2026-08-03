@@ -64,3 +64,19 @@ def test_fetch_holiday_list_retries_a_temporary_connection_failure(monkeypatch):
     assert main.HolidayManager().fetch_holiday_list(2026) == []
     assert len(get.call_args_list) == 13
     sleep.assert_called_once_with(1)
+
+
+def test_process_holidays_keeps_existing_feed_when_provider_is_unavailable(
+    monkeypatch,
+):
+    manager = main.HolidayManager()
+    fetch = Mock(side_effect=main.requests.ConnectTimeout)
+    generate = Mock()
+    monkeypatch.setattr(manager, "fetch_holiday_list", fetch)
+    monkeypatch.setattr(manager, "generate_ics", generate)
+
+    changed, unavailable_years = manager.process_holidays(years=[2026, 2027])
+
+    assert changed is False
+    assert unavailable_years == [2026, 2027]
+    generate.assert_called_once()

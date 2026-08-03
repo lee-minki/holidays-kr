@@ -117,12 +117,22 @@ class HolidayManager:
         with open("holidays.ics", "wb") as f:
             f.write(cal.to_ical())
 
-    def process_holidays(self):
-        years = [datetime.now().year, datetime.now().year + 1]
+    def process_holidays(self, years=None):
+        if years is None:
+            years = [datetime.now().year, datetime.now().year + 1]
         changes_detected = False
+        unavailable_years = []
 
         for year in years:
-            holidays = self.fetch_holiday_list(year)
+            try:
+                holidays = self.fetch_holiday_list(year)
+            except requests.RequestException:
+                unavailable_years.append(year)
+                print(
+                    f"::warning title=Holiday API unavailable::"
+                    f"Kept existing data for {year}."
+                )
+                continue
             if not holidays:
                 continue
 
@@ -143,13 +153,17 @@ class HolidayManager:
         self.cleanup_old_files()
 
         self.generate_ics()
-        return changes_detected
+        return changes_detected, unavailable_years
 
 
 def main():
     manager = HolidayManager()
-    changes = manager.process_holidays()
-    if changes:
+    changes, unavailable_years = manager.process_holidays()
+    if unavailable_years:
+        print(
+            f"Holiday API refresh incomplete for: {', '.join(map(str, unavailable_years))}"
+        )
+    elif changes:
         print("Changes detected and new ICS file generated")
     else:
         print("No changes detected")
