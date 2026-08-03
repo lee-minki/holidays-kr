@@ -2,8 +2,10 @@ import datetime
 import glob
 import json
 import os
+import time
 import uuid
 from datetime import datetime
+from urllib.parse import unquote
 
 import requests
 from icalendar import Calendar, Event
@@ -11,22 +13,30 @@ from icalendar import Calendar, Event
 
 class HolidayManager:
     def __init__(self):
-        self.api = "http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
+        self.api = "https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo"
         self.data_dir = "data"
         os.makedirs(self.data_dir, exist_ok=True)
 
     def fetch_holiday_list(self, year):
         holidays = []
+        service_key = unquote(os.getenv("HOLIDAY_API_KEY", ""))
         for month in range(1, 13):
             params = {
                 "solYear": str(year),
                 "solMonth": f"{month:02d}",
-                "ServiceKey": os.getenv("HOLIDAY_API_KEY"),
+                "ServiceKey": service_key,
                 "_type": "json",
                 "numOfRows": "100",
             }
-            response = requests.get(self.api, params=params, timeout=30)
-            response.raise_for_status()
+            for attempt in range(3):
+                try:
+                    response = requests.get(self.api, params=params, timeout=30)
+                    response.raise_for_status()
+                    break
+                except (requests.ConnectionError, requests.Timeout):
+                    if attempt == 2:
+                        raise
+                    time.sleep(2**attempt)
             items = response.json()["response"]["body"].get("items", {})
             month_items = items.get("item", []) if items else []
 
